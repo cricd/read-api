@@ -1,0 +1,24 @@
+{
+  "name": "read-api",
+  "version": "1.0.0",
+  "description": "An HTTP API that can tell you the sccore of a match",
+  "main": "server.js",
+  "scripts": {
+    "test": "mocha --recursive --reporter=spec"
+  },
+  "author": "Bradley Scott",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "debug": "^2.2.0",
+    "express": "^4.14.0",
+    "moment": "^2.23.0",
+    "node-fetch": "^2.3.0",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "mocha": "^3.5.3",
+    "should": "^11.2.1"
+  }
+}
