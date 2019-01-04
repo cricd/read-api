@@ -4,6 +4,8 @@ const writeApi = require('../write-api');
 const eventProcessors = require('./eventProcessors');
 const battingAndBowling = require('./battingAndBowling');
 
+let cache = {};
+
 exports.handleRequest = async (req, res, next) => {
     debug('Request received for match score with params: ' + JSON.stringify(req.params));
 
@@ -15,6 +17,7 @@ exports.handleRequest = async (req, res, next) => {
 };
 
 exports.getMatchScore = async function(match) {
+    if(cache[match]) return cache[match]; 
 
     var matchScore = { matchInfo: {}, result: {}, innings: [], matchEvents: [] };
     let events = [];
@@ -50,9 +53,19 @@ exports.getMatchScore = async function(match) {
 
     matchScore.matchInfo = matchInfo;
     matchScore.result = resultCalculator.calculateResult(matchScore, matchInfo);
-    matchScore = await battingAndBowling.addBattingStats(matchScore, matchInfo.id);
-    matchScore = await battingAndBowling.addBowlingStats(matchScore, matchInfo.id);
+    
+    try { 
+        await Promise.all([
+            battingAndBowling.addBattingStats(matchScore, matchInfo.id),
+            battingAndBowling.addBowlingStats(matchScore, matchInfo.id)
+        ]) 
+    }
+    catch(err) { 
+        debug(err)
+        throw(err); 
+    } 
 
-    return matchScore;
+    cache[match] = matchScore;
+    return matchScore; 
 }
 

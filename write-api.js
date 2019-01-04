@@ -2,14 +2,23 @@ const debug = require('debug')('read-api:write-api');
 const fetch = require('node-fetch');
 
 // Configuration variables
-var host = process.env.WRITE_API_HOST ? process.env.WRITE_API_HOST : 'write-api';
-var port = process.env.WRITE_API_PORT ? process.env.WRITE_API_PORT : 3001;
-var baseUrl = 'http://' + host + ':' + port; 
+const host = process.env.WRITE_API_HOST ? process.env.WRITE_API_HOST : 'write-api';
+const port = process.env.WRITE_API_PORT ? process.env.WRITE_API_PORT : 3001;
+const baseUrl = 'http://' + host + ':' + port; 
+
+let cache = {
+    matches: {}, 
+    players: {},
+    matchEvents: {},
+    batsmenEvents: {},
+    bowlerEvents: {}
+};
 
 exports.getMatchInfo = async function(match) {
     debug('Attempting to retrieve match info');
 
     if(!match) { throw('match is required to get info'); }
+    if(cache.matches[match]) return cache.matches[match];
  
     let matchInfo; 
     try { 
@@ -19,6 +28,7 @@ exports.getMatchInfo = async function(match) {
     }
     catch(err) { throw('Problem retrieving match info: ' + JSON.stringify(err)); }
 
+    cache.matches[match] = matchInfo;
     return matchInfo;
 };
 
@@ -26,7 +36,8 @@ exports.getPlayerInfo = async function(player) {
     debug('Attempting to retrieve player info');
 
     if(!player) { throw('player is required to get info'); }
- 
+    if(cache.players[player]) return cache.players[player];
+
     let playerInfo; 
     try { 
         const response = await fetch(baseUrl + '/players/' + player);
@@ -35,6 +46,7 @@ exports.getPlayerInfo = async function(player) {
     }
     catch(err) { throw('Problem retrieving player info: ' + JSON.stringify(err)); }
 
+    cache.players[player] = playerInfo;
     return playerInfo;
 };
 
@@ -42,7 +54,8 @@ exports.getMatchEvents = async function(match) {
     debug('Attempting to retrieve match events');
 
     if(!match) { throw('match is required to retrieve events'); }
- 
+    if(cache.matchEvents[match]) return cache.matchEvents[match];
+
     let events = []; 
     try { 
         const response = await fetch(baseUrl + '/matches/' + match + '/events');
@@ -50,6 +63,7 @@ exports.getMatchEvents = async function(match) {
     }
     catch(err) { throw('Problem retrieving events: ' + JSON.stringify(err)); }
 
+    cache.matchEvents[match] = events;
     return events;
 };
 
@@ -57,7 +71,8 @@ exports.getBatsmanEvents = async function(player) {
     debug('Attempting to retrieve player events');
 
     if(!player) { throw('player is required to retrieve events'); }
- 
+    if(cache.batsmenEvents[player]) return cache.batsmenEvents[player];
+
     let events = []; 
     try { 
         const response = await fetch(baseUrl + '/players/' + player + '/batting');
@@ -65,6 +80,7 @@ exports.getBatsmanEvents = async function(player) {
     }
     catch(err) { throw('Problem retrieving events: ' + JSON.stringify(err)); }
 
+    cache.batsmenEvents[player] = events;
     return events;
 };
 
@@ -72,7 +88,8 @@ exports.getBowlerEvents = async function(player) {
     debug('Attempting to retrieve player events');
 
     if(!player) { throw('player is required to retrieve events'); }
- 
+    if(cache.bowlerEvents[player]) return cache.bowlerEvents[player];
+
     let events = []; 
     try { 
         const response = await fetch(baseUrl + '/players/' + player + '/bowling');
@@ -80,5 +97,6 @@ exports.getBowlerEvents = async function(player) {
     }
     catch(err) { throw('Problem retrieving events: ' + JSON.stringify(err)); }
 
+    cache.bowlingEvents[player] = events;
     return events;
 };
